@@ -1,10 +1,26 @@
 'use client';
 
-import { ChangeEvent, use, useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useUser } from '@/components/user/user-context';
 import { UserContextType } from "@/lib/types/user-type";
 import { ServerResponse, Message, Settings } from '@/lib/types/server-type';
 import request from '@/lib/http/request';
+
+type TestSettings = {
+  test_string: string
+};
+
+type TestResult = {
+  label: string
+  probability: number
+};
+
+type TestResults = {
+  results: TestResult[],
+  moderate: boolean,
+  moderation_message: string
+  total_probability: number
+};
 
 export default function ServerDetails({
   params,
@@ -16,6 +32,9 @@ export default function ServerDetails({
   const [server, setServer] = useState<ServerResponse | null>(null);
   const [unsaved, setUnsaved] = useState<boolean>(false);
   const [settingsItems, setSettingsItems] = useState<Settings | null>(null)
+  const [testSettings, setTestSettings] = useState<TestSettings | null>(null);
+  const [disableTestButton, setDisableTestButton] = useState<boolean>(false);
+  const [testResults, setTestResults] = useState<TestResults | null>(null)
 
   useUser().then(resp => setUser(resp));
 
@@ -134,6 +153,16 @@ export default function ServerDetails({
     }
   };
 
+  const runTest = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    setDisableTestButton(true);
+
+    const response = await request(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/test?test_string=${testSettings?.test_string}&guild_id=${server?.guild.guild_id}`);
+    setDisableTestButton(false);
+    
+    setTestResults(await response.json());
+  };
+
   return (
     <>
       <header>
@@ -209,6 +238,55 @@ export default function ServerDetails({
             )}
           </div>
         </form>
+
+        {settingsItems !== null && (
+          <form className="w-full mx-auto p-6 m-6 bg-white rounded-md shadow">
+            <h3 className="text-xl font-semibold mb-4">Test Server Settings</h3>
+            <p className="m-4">Does not count towards your daily message quota.</p>
+
+            {testResults !== null && (
+              <>
+                <ul className="pl-8 pr-8 list-disc">
+                  {testResults.results.map((result: TestResult) => {
+                    const settingKey = `enable_${result.label.toLowerCase()}` as keyof typeof settingsItems;
+
+                    if (settingsItems[settingKey] === false || result.label.toLowerCase() === 'ok') {
+                      return null;
+                    }
+
+                    return (
+                      <li key={result.label}>{getLabelForSetting(`enable_${result.label.toLowerCase()}`)}: {(result.probability * 100).toFixed(2)}%</li>
+                    );
+                  })}
+                </ul>
+                <p className="m-4">Total probability: {(testResults.total_probability * 100).toFixed(2)}%</p>
+                <p className="m-4">Message {testResults.moderate ? 'would be moderated' : 'would not be moderated'}</p>
+              </>
+            )}
+
+            <div className="flex">
+              <label className="w-5/6 flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
+                <input
+                  id="moderation_message"
+                  value={testSettings?.test_string}
+                  onChange={e => setTestSettings({test_string: e.target.value})}
+                  className="mt-1 w-full rounded border-gray-300 border p-2"
+                />
+                <div className="w-full">
+                  <p className="font-medium">Test message</p>
+                </div>
+              </label>
+
+              <button
+                onClick={(e) => runTest(e)}
+                disabled={disableTestButton}
+                className="px-3 py-1 rounded-md w-1/12 h-1/6 m-4 font-semibold shadow text-white bg-slate-500"
+              >
+                Test
+              </button>
+            </div>
+          </form>
+        )}
 
         {unsaved && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-200 text-black px-6 py-3 rounded-md shadow-lg flex items-center space-x-3">
