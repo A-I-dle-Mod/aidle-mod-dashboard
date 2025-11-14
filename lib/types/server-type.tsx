@@ -23,6 +23,7 @@ export type Settings = {
   enable_v: boolean;
   enable_v2: boolean;
   confidence_limit: number;
+  moderation_message: string;
   updated_date: Date;
 }
 

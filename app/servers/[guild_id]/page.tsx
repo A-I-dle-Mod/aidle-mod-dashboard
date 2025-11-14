@@ -104,13 +104,26 @@ export default function ServerDetails({
   };
 
   const handleConfidenceChange = (confidence: string) => {
+    const confidenceKey = 'confidence_limit' as keyof typeof settingsItems;
+
     setSettingsItems({
       ...settingsItems,
-      ['confidence_limit']: parseInt(confidence, 10),
+      [confidenceKey]: parseInt(confidence, 10),
     });
 
     setUnsaved(true);
   };
+
+  const handleModerationMessageChange = (message: string) => {
+    const moderationMessageKey = 'moderation_message' as keyof typeof settingsItems;
+
+    setSettingsItems({
+      ...settingsItems,
+      [moderationMessageKey]: message,
+    });
+
+    setUnsaved(true);
+  }
 
   const handleSave = async () => {
     const bareSettings = Object.assign({}, settingsItems);
@@ -163,7 +176,7 @@ export default function ServerDetails({
             })}
 
             {settingsItems !== null && (
-              <label className="flex items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
+              <label className="flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
                 <input
                   id="confidence_limit"
                   type="range"
@@ -171,11 +184,26 @@ export default function ServerDetails({
                   max={100}
                   value={settingsItems?.confidence_limit}
                   onChange={e => handleConfidenceChange(e.target.value)}
-                  className="mt-1 rounded border-gray-300"
+                  className="mt-1 rounded border-gray-300 w-full"
                 />
                 <div>
-                  <p className="font-medium">Confidence Value ({settingsItems?.confidence_limit}%)</p>
+                  <p className="font-medium w-full">Confidence Value ({settingsItems?.confidence_limit}%)</p>
                   <p className="text-sm text-gray-500">The minimum confidence (score) a message needs to be auto-moderated</p>
+                </div>
+              </label>
+            )}
+
+            {settingsItems !== null && (
+              <label className="flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
+                <input
+                  id="moderation_message"
+                  value={settingsItems?.moderation_message}
+                  onChange={e => handleModerationMessageChange(e.target.value)}
+                  className="mt-1 w-full rounded border-gray-300 border p-2"
+                />
+                <div className="w-full">
+                  <p className="font-medium">Moderation message</p>
+                  <p className="text-sm text-gray-500">Shown to a user when one of their messages is auto moderated.</p>
                 </div>
               </label>
             )}
