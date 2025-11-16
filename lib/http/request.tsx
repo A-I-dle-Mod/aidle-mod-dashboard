@@ -1,10 +1,14 @@
 'use client';
 
-export default async function request(url: string, method: string = 'GET', body: object = {}) : Promise<Response> {
+export default async function request(url: string, method: string = 'GET', body: object = {}): Promise<Response> {
   if (typeof localStorage !== 'undefined') {
     if (localStorage.getItem('user_token') === null) {
       const discordAuthUrl = process.env.NEXT_PUBLIC_DISCORD_AUTH_URL;
-      window.location = discordAuthUrl;
+      if (discordAuthUrl) {
+        window.location.href = discordAuthUrl;
+      } else {
+        throw new Error('Discord auth URL is not defined');
+      }
     }
   }
 
@@ -29,10 +33,9 @@ export default async function request(url: string, method: string = 'GET', body:
     response = await fetch(url, {
       method: method.toUpperCase(),
       credentials: 'include',
-      headers
+      headers,
     });
   }
-  
 
-  return response
+  return response;
 }

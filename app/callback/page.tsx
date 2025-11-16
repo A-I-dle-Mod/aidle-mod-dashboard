@@ -4,23 +4,29 @@ import { useEffect, useState } from 'react';
 import { redirect, RedirectType } from 'next/navigation';
 
 export default function Callback() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
+  const [code, setCode] = useState<string>('');
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URI}/callback`;
-
   const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useState(() => {
+    const params = new URLSearchParams(typeof window !== 'undefined' && window.location ? window.location.search : '');
+    setCode(params.get('code') || '');
+  });
 
   useEffect(() => {
     async function fetchAuthToken() {
       if (code && authToken === null) {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`, {
-            method: 'POST',
-            credentials: 'include', // Important to include cookies
-          });
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`,
+            {
+              method: 'POST',
+              credentials: 'include', // Important to include cookies
+            }
+          );
 
           const body = await response.text();
-          
+
           function setToken(token: string) {
             localStorage.setItem('user_token', token);
             setAuthToken(token);
@@ -40,7 +46,7 @@ export default function Callback() {
       // Redirect to homepage after setting the token
       redirect('/', RedirectType.replace);
     }
-  }, [authToken])
+  }, [authToken]);
 
   // Make the request to the backend with the code and then send the user to the homepage
   // Once they have a cookie
