@@ -1,18 +1,14 @@
-'use client'
+'use client';
 
 // Use usePathname for catching route name.
 import { usePathname } from 'next/navigation';
 import Page from '@/app/callback/page';
 
 export const LayoutProvider = ({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
   const pathname = usePathname();
-  return (
-    <>
-      {pathname === "/callback" ? Page() : children}
-    </>
-  )
+  return <>{pathname === '/callback' ? Page() : children}</>;
 };

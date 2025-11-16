@@ -10,7 +10,7 @@ export type Message = {
 export type MessagesResponse = {
   data: Message[];
   status: string;
-}
+};
 
 export type Settings = {
   id: number;
@@ -25,7 +25,7 @@ export type Settings = {
   confidence_limit: number;
   moderation_message: string;
   updated_date: Date;
-}
+};
 
 export type Server = {
   id: number;

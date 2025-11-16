@@ -14,13 +14,16 @@ export default function Callback() {
     async function fetchAuthToken() {
       if (code && authToken === null) {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`, {
-            method: 'POST',
-            credentials: 'include', // Important to include cookies
-          });
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`,
+            {
+              method: 'POST',
+              credentials: 'include', // Important to include cookies
+            }
+          );
 
           const body = await response.text();
-          
+
           function setToken(token: string) {
             localStorage.setItem('user_token', token);
             setAuthToken(token);
@@ -40,7 +43,7 @@ export default function Callback() {
       // Redirect to homepage after setting the token
       redirect('/', RedirectType.replace);
     }
-  }, [authToken])
+  }, [authToken]);
 
   // Make the request to the backend with the code and then send the user to the homepage
   // Once they have a cookie

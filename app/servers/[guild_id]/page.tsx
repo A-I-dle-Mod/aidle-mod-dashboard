@@ -2,41 +2,37 @@
 
 import { use, useEffect, useState } from 'react';
 import { useUser } from '@/components/user/user-context';
-import { UserContextType } from "@/lib/types/user-type";
+import { UserContextType } from '@/lib/types/user-type';
 import { ServerResponse, Message, Settings } from '@/lib/types/server-type';
 import request from '@/lib/http/request';
 
 type TestSettings = {
-  test_string: string
+  test_string: string;
 };
 
 type TestResult = {
-  label: string
-  probability: number
+  label: string;
+  probability: number;
 };
 
 type TestResults = {
-  results: TestResult[],
-  moderate: boolean,
-  moderation_message: string
-  total_probability: number
+  results: TestResult[];
+  moderate: boolean;
+  moderation_message: string;
+  total_probability: number;
 };
 
-export default function ServerDetails({
-  params,
-}: {
-  params: Promise<{ guild_id: string }>
-}) {
+export default function ServerDetails({ params }: { params: Promise<{ guild_id: string }> }) {
   const { guild_id } = use(params);
   const [user, setUser] = useState<UserContextType | null>(null);
   const [server, setServer] = useState<ServerResponse | null>(null);
   const [unsaved, setUnsaved] = useState<boolean>(false);
-  const [settingsItems, setSettingsItems] = useState<Settings | null>(null)
+  const [settingsItems, setSettingsItems] = useState<Settings | null>(null);
   const [testSettings, setTestSettings] = useState<TestSettings | null>(null);
   const [disableTestButton, setDisableTestButton] = useState<boolean>(false);
-  const [testResults, setTestResults] = useState<TestResults | null>(null)
+  const [testResults, setTestResults] = useState<TestResults | null>(null);
 
-  useUser().then(resp => setUser(resp));
+  useUser().then((resp) => setUser(resp));
 
   useEffect(() => {
     async function fetchServerInfo() {
@@ -79,10 +75,10 @@ export default function ServerDetails({
         return 'Violence';
       case 'enable_v2':
         return 'Graphic Violence';
-      default: 
+      default:
         return 'Undefined';
     }
-  }
+  };
 
   const getDescriptionForSetting = (id: string) => {
     switch (id) {
@@ -102,10 +98,10 @@ export default function ServerDetails({
         return 'Content that promotes or glorifies violence or celebrates the suffering or humiliation of others.';
       case 'enable_v2':
         return 'Violent content that depicts death, violence, or serious physical injury in extreme graphic detail.';
-      default: 
+      default:
         return 'Undefined';
     }
-  }
+  };
 
   const handleChange = (id: string) => {
     if (settingsItems === null) {
@@ -116,37 +112,43 @@ export default function ServerDetails({
 
     setSettingsItems({
       ...settingsItems,
-      [settingKey]: !settingsItems[settingKey]
+      [settingKey]: !settingsItems[settingKey],
     });
 
     setUnsaved(true);
   };
 
   const handleConfidenceChange = (confidence: string) => {
-    const confidenceKey = 'confidence_limit' as keyof typeof settingsItems;
-
-    setSettingsItems({
-      ...settingsItems,
-      [confidenceKey]: parseInt(confidence, 10),
+    setSettingsItems((prevSettings) => {
+      if (!prevSettings) return prevSettings;
+      return {
+        ...prevSettings,
+        confidence_limit: parseInt(confidence, 10),
+      };
     });
 
     setUnsaved(true);
   };
 
   const handleModerationMessageChange = (message: string) => {
-    const moderationMessageKey = 'moderation_message' as keyof typeof settingsItems;
-
-    setSettingsItems({
-      ...settingsItems,
-      [moderationMessageKey]: message,
+    setSettingsItems((prevSettings) => {
+      if (!prevSettings) return prevSettings;
+      return {
+        ...prevSettings,
+        moderation_message: message,
+      };
     });
 
     setUnsaved(true);
-  }
+  };
 
   const handleSave = async () => {
     const bareSettings = Object.assign({}, settingsItems);
-    const response = await request(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/guild/${guild_id}/settings`, 'POST', bareSettings);
+    const response = await request(
+      `${process.env.NEXT_PUBLIC_API_ENDPOINT}/guild/${guild_id}/settings`,
+      'POST',
+      bareSettings
+    );
 
     if (response.ok) {
       setUnsaved(false);
@@ -157,82 +159,90 @@ export default function ServerDetails({
     e.preventDefault();
     setDisableTestButton(true);
 
-    const response = await request(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/test?test_string=${testSettings?.test_string}&guild_id=${server?.guild.guild_id}`);
+    const response = await request(
+      `${process.env.NEXT_PUBLIC_API_ENDPOINT}/test?test_string=${testSettings?.test_string}&guild_id=${server?.guild.guild_id}`
+    );
     setDisableTestButton(false);
-    
+
     setTestResults(await response.json());
   };
 
   return (
     <>
       <header>
-        <h2 className="text-xl font-semibold mb-4">{server?.guild.guild_name}</h2>
+        <h2 className='text-xl font-semibold mb-4'>{server?.guild.guild_name}</h2>
       </header>
       <div>
-        <form className="w-full mx-auto p-6 m-6 bg-white rounded-md shadow">
-          <h3 className="text-xl font-semibold mb-4">Server Settings</h3>
-          <p className="m-4">Choose the types of content A.I.dle Mod should Moderate</p>
+        <form className='w-full mx-auto p-6 m-6 bg-white rounded-md shadow'>
+          <h3 className='text-xl font-semibold mb-4'>Server Settings</h3>
+          <p className='m-4'>Choose the types of content A.I.dle Mod should Moderate</p>
 
-          <div className="grid grid-cols-2 gap-2">
-            {settingsItems !== null && Object.keys(settingsItems).map((item: string) => {
-              if (item.indexOf('enable_') === -1) {
-                return null;
-              }
+          <div className='grid grid-cols-2 gap-2'>
+            {settingsItems !== null &&
+              Object.keys(settingsItems).map((item: string) => {
+                if (item.indexOf('enable_') === -1) {
+                  return null;
+                }
 
-              const settingKey = item as keyof typeof settingsItems;
+                const settingKey = item as keyof typeof settingsItems;
 
-              if (typeof settingsItems[settingKey] !== 'boolean') {
-                return null;
-              }
+                if (typeof settingsItems[settingKey] !== 'boolean') {
+                  return null;
+                }
 
-              const details: boolean = settingsItems[settingKey];
+                const details = Boolean(settingsItems[settingKey]);
 
-              return (
-                <label key={item} className="flex items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
-                  <input
-                    id={item}
-                    type="checkbox"
-                    checked={details}
-                    onChange={() => handleChange(item)}
-                    className="mt-1 rounded border-gray-300"
-                  />
-                  <div>
-                    <p className="font-medium">{getLabelForSetting(item)}</p>
-                    <p className="text-sm text-gray-500">{getDescriptionForSetting(item)}</p>
-                  </div>
-                </label>
-              );
-            })}
+                return (
+                  <label
+                    key={item}
+                    className='flex items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50'
+                  >
+                    <input
+                      id={item}
+                      type='checkbox'
+                      checked={details}
+                      onChange={() => handleChange(item)}
+                      className='mt-1 rounded border-gray-300'
+                    />
+                    <div>
+                      <p className='font-medium'>{getLabelForSetting(item)}</p>
+                      <p className='text-sm text-gray-500'>{getDescriptionForSetting(item)}</p>
+                    </div>
+                  </label>
+                );
+              })}
 
             {settingsItems !== null && (
-              <label className="flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
+              <label className='flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50'>
                 <input
-                  id="confidence_limit"
-                  type="range"
+                  id='confidence_limit'
+                  type='range'
                   min={0}
                   max={100}
                   value={settingsItems?.confidence_limit}
-                  onChange={e => handleConfidenceChange(e.target.value)}
-                  className="mt-1 rounded border-gray-300 w-full"
+                  onChange={(e) => handleConfidenceChange(e.target.value)}
+                  className='mt-1 rounded border-gray-300 w-full'
                 />
                 <div>
-                  <p className="font-medium w-full">Confidence Value ({settingsItems?.confidence_limit}%)</p>
-                  <p className="text-sm text-gray-500">The minimum confidence (score) a message needs to be auto-moderated</p>
+                  <p className='font-medium w-full'>Confidence Value ({settingsItems?.confidence_limit}%)</p>
+                  <p className='text-sm text-gray-500'>
+                    The minimum confidence (score) a message needs to be auto-moderated
+                  </p>
                 </div>
               </label>
             )}
 
             {settingsItems !== null && (
-              <label className="flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
+              <label className='flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50'>
                 <input
-                  id="moderation_message"
+                  id='moderation_message'
                   value={settingsItems?.moderation_message}
-                  onChange={e => handleModerationMessageChange(e.target.value)}
-                  className="mt-1 w-full rounded border-gray-300 border p-2"
+                  onChange={(e) => handleModerationMessageChange(e.target.value)}
+                  className='mt-1 w-full rounded border-gray-300 border p-2'
                 />
-                <div className="w-full">
-                  <p className="font-medium">Moderation message</p>
-                  <p className="text-sm text-gray-500">Shown to a user when one of their messages is auto moderated.</p>
+                <div className='w-full'>
+                  <p className='font-medium'>Moderation message</p>
+                  <p className='text-sm text-gray-500'>Shown to a user when one of their messages is auto moderated.</p>
                 </div>
               </label>
             )}
@@ -240,13 +250,13 @@ export default function ServerDetails({
         </form>
 
         {settingsItems !== null && (
-          <form className="w-full mx-auto p-6 m-6 bg-white rounded-md shadow">
-            <h3 className="text-xl font-semibold mb-4">Test Server Settings</h3>
-            <p className="m-4">Does not count towards your daily message quota.</p>
+          <form className='w-full mx-auto p-6 m-6 bg-white rounded-md shadow'>
+            <h3 className='text-xl font-semibold mb-4'>Test Server Settings</h3>
+            <p className='m-4'>Does not count towards your daily message quota.</p>
 
             {testResults !== null && (
               <>
-                <ul className="pl-8 pr-8 list-disc">
+                <ul className='pl-8 pr-8 list-disc'>
                   {testResults.results.map((result: TestResult) => {
                     const settingKey = `enable_${result.label.toLowerCase()}` as keyof typeof settingsItems;
 
@@ -255,32 +265,35 @@ export default function ServerDetails({
                     }
 
                     return (
-                      <li key={result.label}>{getLabelForSetting(`enable_${result.label.toLowerCase()}`)}: {(result.probability * 100).toFixed(2)}%</li>
+                      <li key={result.label}>
+                        {getLabelForSetting(`enable_${result.label.toLowerCase()}`)}:{' '}
+                        {(result.probability * 100).toFixed(2)}%
+                      </li>
                     );
                   })}
                 </ul>
-                <p className="m-4">Total probability: {(testResults.total_probability * 100).toFixed(2)}%</p>
-                <p className="m-4">Message {testResults.moderate ? 'would be moderated' : 'would not be moderated'}</p>
+                <p className='m-4'>Total probability: {(testResults.total_probability * 100).toFixed(2)}%</p>
+                <p className='m-4'>Message {testResults.moderate ? 'would be moderated' : 'would not be moderated'}</p>
               </>
             )}
 
-            <div className="flex">
-              <label className="w-5/6 flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50">
+            <div className='flex'>
+              <label className='w-5/6 flex flex-wrap items-start space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50'>
                 <input
-                  id="moderation_message"
+                  id='moderation_message'
                   value={testSettings?.test_string}
-                  onChange={e => setTestSettings({test_string: e.target.value})}
-                  className="mt-1 w-full rounded border-gray-300 border p-2"
+                  onChange={(e) => setTestSettings({ test_string: e.target.value })}
+                  className='mt-1 w-full rounded border-gray-300 border p-2'
                 />
-                <div className="w-full">
-                  <p className="font-medium">Test message</p>
+                <div className='w-full'>
+                  <p className='font-medium'>Test message</p>
                 </div>
               </label>
 
               <button
                 onClick={(e) => runTest(e)}
                 disabled={disableTestButton}
-                className="px-3 py-1 rounded-md w-1/12 h-1/6 m-4 font-semibold shadow text-white bg-slate-500"
+                className='px-3 py-1 rounded-md w-1/12 h-1/6 m-4 font-semibold shadow text-white bg-slate-500'
               >
                 Test
               </button>
@@ -289,41 +302,32 @@ export default function ServerDetails({
         )}
 
         {unsaved && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-200 text-black px-6 py-3 rounded-md shadow-lg flex items-center space-x-3">
+          <div className='fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-200 text-black px-6 py-3 rounded-md shadow-lg flex items-center space-x-3'>
             <span>You have unsaved changes</span>
-            <button
-              onClick={handleSave}
-              className="px-3 py-1 rounded-md font-semibold shadow text-white bg-slate-500"
-            >
+            <button onClick={handleSave} className='px-3 py-1 rounded-md font-semibold shadow text-white bg-slate-500'>
               Save
             </button>
           </div>
         )}
       </div>
-      <table className="min-w-full text-left text-sm/6 text-zinc-950 dark:text-white mt-8">
-        <caption className="caption-top text-slate-500">
+      <table className='min-w-full text-left text-sm/6 text-zinc-950 dark:text-white mt-8'>
+        <caption className='caption-top text-slate-500'>
           Scores represent harmful language detected, lower scores mean less harmful language.
         </caption>
         <thead>
-          <tr className="border-b border-b-zinc-950/10">
-            <th className="p-2">Message Sent</th>
-            <th className="p-2">Author</th>
-            <th className="p-2">Score</th>
+          <tr className='border-b border-b-zinc-950/10'>
+            <th className='p-2'>Message Sent</th>
+            <th className='p-2'>Author</th>
+            <th className='p-2'>Score</th>
           </tr>
         </thead>
         <tbody>
           {server?.guild.messages?.map((message: Message) => {
             return (
-              <tr key={message.id} className="border-b border-b-zinc-950/10">
-                <td className="flex p-2">
-                  {new Date(message.created_date).toLocaleString()}
-                </td>
-                <td className="p-2">
-                  {message.author_name}
-                </td>
-                <td className="p-2">
-                  {(message.score * 100).toFixed(2)}%
-                </td>
+              <tr key={message.id} className='border-b border-b-zinc-950/10'>
+                <td className='flex p-2'>{new Date(message.created_date).toLocaleString()}</td>
+                <td className='p-2'>{message.author_name}</td>
+                <td className='p-2'>{(message.score * 100).toFixed(2)}%</td>
               </tr>
             );
           })}
