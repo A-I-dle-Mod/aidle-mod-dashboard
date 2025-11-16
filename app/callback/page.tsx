@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react';
 import { redirect, RedirectType } from 'next/navigation';
 
 export default function Callback() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
+  const [code, setCode] = useState<string>('');
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URI}/callback`;
-
   const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useState(() => {
+    const params = new URLSearchParams(typeof window !== 'undefined' && window.location ? window.location.search : '');
+    setCode(params.get('code') || '');
+  });
 
   useEffect(() => {
     async function fetchAuthToken() {

@@ -12,8 +12,11 @@ import styles from './servers.module.css';
 export default function Servers() {
   const [user, setUser] = useState<UserContextType | null>(null);
   const [servers, setServers] = useState<ServersResponse | null>(null);
+  const userPromise = useUser();
 
-  useUser().then((resp) => setUser(resp));
+  useEffect(() => {
+    userPromise.then((resp) => setUser(resp));
+  }, [userPromise]);
 
   function sortMessages(messages: Message[]) {
     const today = new Date();
