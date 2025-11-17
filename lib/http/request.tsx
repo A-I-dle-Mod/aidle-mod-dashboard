@@ -3,8 +3,8 @@
 export default async function request(url: string, method: string = 'GET', body: object = {}) : Promise<Response> {
   if (typeof localStorage !== 'undefined') {
     if (localStorage.getItem('user_token') === null) {
-      const discordAuthUrl = process.env.NEXT_PUBLIC_DISCORD_AUTH_URL;
-      window.location = discordAuthUrl;
+      const discordAuthUrl = process.env.NEXT_PUBLIC_DISCORD_AUTH_URL || '/auth';
+      window.location.href = discordAuthUrl;
     }
   }
 
