@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
       new URL('https://cdn.discordapp.com/icons/*/*.png?size=1024'),
     ],
   },
+  output: "standalone"
 };
 
 export default nextConfig;
