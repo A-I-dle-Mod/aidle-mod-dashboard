@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { redirect, RedirectType } from 'next/navigation';
 
 export default function Callback() {
-  const params = new URLSearchParams(window.location.search);
+  let params;
+  if (typeof window === 'undefined') {
+    params = new URLSearchParams({});
+  } else {
+    params = new URLSearchParams(window.location.search);
+  }
+
   const code = params.get('code');
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URI}/callback`;
 

@@ -123,6 +123,10 @@ export default function ServerDetails({
   };
 
   const handleConfidenceChange = (confidence: string) => {
+    if (settingsItems === null) {
+      return;
+    }
+
     const confidenceKey = 'confidence_limit' as keyof typeof settingsItems;
 
     setSettingsItems({
@@ -134,6 +138,10 @@ export default function ServerDetails({
   };
 
   const handleModerationMessageChange = (message: string) => {
+    if (settingsItems === null) {
+      return;
+    }
+    
     const moderationMessageKey = 'moderation_message' as keyof typeof settingsItems;
 
     setSettingsItems({
