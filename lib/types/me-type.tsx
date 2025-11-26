@@ -3,7 +3,7 @@ import { Server } from './server-type';
 export type Plan = {
   id: number;
   max_requests: number;
-}
+};
 
 export type Me = {
   id: number;
@@ -12,4 +12,4 @@ export type Me = {
   owner_name: string;
   guilds: Server[];
   plan: Plan;
-}
+};

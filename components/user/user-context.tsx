@@ -1,26 +1,16 @@
 'use client';
 
-import React, {
-  createContext,
-} from 'react';
+import React, { createContext } from 'react';
 import type { UserContextType } from '@/lib/types/user-type';
-import GetUser from "@/lib/user/get-user";
+import GetUser from '@/lib/user/get-user';
 
 const UserContext = createContext<Promise<UserContextType> | null>(null);
 
-export function UserProvider({
-  children,
-}: {
-  children: React.ReactNode,
-}) {
+export function UserProvider({ children }: { children: React.ReactNode }) {
   const user = GetUser();
 
-  return (
-    <UserContext.Provider value={ user }>
-      {children}
-    </UserContext.Provider>
-  );
-};
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
+}
 
 export function useUser() {
   const context = React.useContext(UserContext);
@@ -29,4 +19,4 @@ export function useUser() {
   }
 
   return context;
-};
+}
