@@ -119,24 +119,30 @@ export default function ServerDetails({ params }: { params: Promise<{ guild_id: 
   };
 
   const handleConfidenceChange = (confidence: string) => {
-    setSettingsItems((prevSettings) => {
-      if (!prevSettings) return prevSettings;
-      return {
-        ...prevSettings,
-        confidence_limit: parseInt(confidence, 10),
-      };
+    if (settingsItems === null) {
+      return;
+    }
+
+    const confidenceKey = 'confidence_limit' as keyof typeof settingsItems;
+
+    setSettingsItems({
+      ...settingsItems,
+      [confidenceKey]: parseInt(confidence, 10),
     });
 
     setUnsaved(true);
   };
 
   const handleModerationMessageChange = (message: string) => {
-    setSettingsItems((prevSettings) => {
-      if (!prevSettings) return prevSettings;
-      return {
-        ...prevSettings,
-        moderation_message: message,
-      };
+    if (settingsItems === null) {
+      return;
+    }
+    
+    const moderationMessageKey = 'moderation_message' as keyof typeof settingsItems;
+
+    setSettingsItems({
+      ...settingsItems,
+      [moderationMessageKey]: message,
     });
 
     setUnsaved(true);
